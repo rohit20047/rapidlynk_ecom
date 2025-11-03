@@ -7,6 +7,7 @@ import (
 
 	"sticker-store-backend/internal/database"
 	"sticker-store-backend/internal/handlers"
+
 	"sticker-store-backend/internal/models"
 
 	"github.com/gofiber/fiber/v2"
@@ -23,6 +24,7 @@ func main() {
 
 	// Auto-migrate your models
 	database.DB.AutoMigrate(&models.Sticker{})
+	database.DB.AutoMigrate(&models.User{})
 
 	app := fiber.New()
 
@@ -33,6 +35,7 @@ func main() {
 
 	app.Get("/api/stickers", handlers.GetStickers)
 	app.Post("/api/stickers", handlers.CreateSticker)
+	app.Post("/api/register", handlers.Register)
 
 	port := os.Getenv("PORT")
 	if port == "" {
