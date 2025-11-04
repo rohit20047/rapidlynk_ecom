@@ -70,3 +70,59 @@ func Register(c *fiber.Ctx) error {
 		},
 	})
 }
+
+func Login(c *fiber.Ctx) error {
+	jwtSecret := []byte(os.Getenv("JWT_SECRET"))
+	if len(jwtSecret) == 0 {
+		log.Fatal("JWT_SECRET not set ")
+	}
+
+	var body struct {
+		Name     string `json:"name"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	if err := c.BodyParser(&body); err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "invlid request"})
+
+	}
+
+	if body.Email == "" || body.Password == "" {
+		return c.Status(400).JSON(fiber.Map{"error": "email and password required"})
+	}
+
+	var user models.User
+
+	result := database.DB.First(&user, "email = ?", body.Email)
+	if result.Error != nil {
+		return c.Status(401).JSON(fiber.Map{"error": "invalid email "})
+	}
+
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password))
+	if err != nil {
+		return c.Status(401).JSON(fiber.Map{"error": "invalid email or password"})
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": user.ID,
+		"exp":     time.Now().Add(72 * time.Hour).Unix(),
+	})
+
+	tokenString, err := token.SignedString(jwtSecret)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "could not create token"})
+	}
+
+	// 7️⃣ Send response
+	return c.JSON(fiber.Map{
+		"message": "login successful",
+		"token":   tokenString,
+		"user": fiber.Map{
+			"id":    user.ID,
+			"name":  user.Name,
+			"email": user.Email,
+		},
+	})
+
+}

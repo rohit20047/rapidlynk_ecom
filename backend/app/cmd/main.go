@@ -36,6 +36,7 @@ func main() {
 	app.Get("/api/stickers", handlers.GetStickers)
 	app.Post("/api/stickers", handlers.CreateSticker)
 	app.Post("/api/register", handlers.Register)
+	app.Post("/api/login", handlers.Login)
 
 	port := os.Getenv("PORT")
 	if port == "" {
