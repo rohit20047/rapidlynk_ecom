@@ -7,6 +7,7 @@ import (
 
 	"sticker-store-backend/internal/database"
 	"sticker-store-backend/internal/handlers"
+	"sticker-store-backend/internal/middleware"
 
 	"sticker-store-backend/internal/models"
 
@@ -25,6 +26,7 @@ func main() {
 	// Auto-migrate your models
 	database.DB.AutoMigrate(&models.Sticker{})
 	database.DB.AutoMigrate(&models.User{})
+	database.DB.AutoMigrate(&models.Address{})
 
 	app := fiber.New()
 
@@ -38,6 +40,10 @@ func main() {
 	app.Post("/api/register", handlers.Register)
 	app.Post("/api/login", handlers.Login)
 
+	api := app.Group("/api")
+	protected := api.Group("", middleware.AuthMiddleware)
+	protected.Post("/address", handlers.AddAddress)
+	protected.Get("/address", handlers.GetAddresses)
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
