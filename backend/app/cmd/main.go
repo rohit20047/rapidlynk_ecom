@@ -27,6 +27,7 @@ func main() {
 	database.DB.AutoMigrate(&models.Sticker{})
 	database.DB.AutoMigrate(&models.User{})
 	database.DB.AutoMigrate(&models.Address{})
+	database.DB.AutoMigrate(&models.CartItem{})
 
 	app := fiber.New()
 
@@ -42,8 +43,12 @@ func main() {
 
 	api := app.Group("/api")
 	protected := api.Group("", middleware.AuthMiddleware)
+
 	protected.Post("/address", handlers.AddAddress)
 	protected.Get("/address", handlers.GetAddresses)
+	protected.Post("/cart", handlers.ADDToCart)
+	protected.Get("/cart", handlers.GetCart)
+	protected.Delete("/cart/:id", handlers.RemoveFromCart)
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
