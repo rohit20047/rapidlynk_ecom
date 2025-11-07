@@ -49,6 +49,7 @@ func main() {
 	protected.Post("/cart", handlers.ADDToCart)
 	protected.Get("/cart", handlers.GetCart)
 	protected.Delete("/cart/:id", handlers.RemoveFromCart)
+	protected.Post("/orders", handlers.CreateOrder)
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
